@@ -24,6 +24,3 @@ class User(db.Model):
 
     def __repr__(self):
         return "<User(fullname='%s', username='%s')>" % (self.fullname, self.username)
-
-
-db.create_all()
