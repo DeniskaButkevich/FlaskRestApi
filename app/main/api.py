@@ -1,5 +1,6 @@
 from flask_restful import Api
-from app.controller.user import UserList, User
+
+# from app.controller.UserController import UserList, User
 from app.main.errors import errors
 
 # Flask API Configuration
@@ -9,5 +10,5 @@ api = Api(
     prefix='/api'
 )
 
-api.add_resource(UserList, '/users')
-api.add_resource(User, '/users/<int:id_user>/')
+# api.add_resource(UserList, '/users')
+# api.add_resource(User, '/users/<int:id_user>/')

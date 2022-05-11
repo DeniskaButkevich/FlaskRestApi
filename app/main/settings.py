@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 
-class Config:
 
+class Config:
     # project root directory
     BASE_DIR = os.path.join(os.pardir, os.path.dirname(__file__))
     SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -13,6 +13,7 @@ class Config:
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
+
     # log file path
     # --------------------------------------------------------------------
     enable_access_log = False
@@ -21,7 +22,7 @@ class Config:
 
     # sqlalchemy database main
     # --------------------------------------------------------------------
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = "postgresql://admin:admin@localhost/flaskbd"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'executemany_mode': 'batch',
@@ -33,21 +34,18 @@ class Config:
 
 
 class DevelopmentConfig(Config):
-
     ENV = os.environ.get("FLASK_ENV", "development")
     DEBUG = True
     ASSETS_DEBUG = True
 
 
 class TestingConfig(Config):
-
     ENV = os.environ.get("FLASK_ENV", "testing")
     DEBUG = True
     TESTING = True
 
 
 class ProductionConfig(Config):
-
     ENV = os.environ.get("FLASK_ENV", "production")
     DEBUG = False
     USE_RELOADER = False
