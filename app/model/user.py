@@ -1,6 +1,7 @@
+from flask_restx import fields
 from sqlalchemy import Integer, String
 from sqlalchemy_utils import EmailType
-from flask_restful import fields
+
 from ..main.database import db
 
 
@@ -16,14 +17,6 @@ class User(db.Model):
     password = db.Column(String(50), nullable=False)
     email = db.Column(EmailType(), nullable=False, unique=True)
 
-    resource_fields = {
-        'id': fields.Integer,
-        'fullname': fields.String,
-        'username': fields.String,
-        'password': fields.String,
-        'email': fields.String
-    }
-
     def __init__(self, id, fullname, username, password, email):
         self.id = id
         self.fullname = fullname
@@ -33,3 +26,26 @@ class User(db.Model):
 
     def __repr__(self):
         return "<User(fullname='%s', username='%s')>" % (self.fullname, self.username)
+
+    resource_fields = {
+        'id': fields.Integer(
+            readonly=True,
+            description='Hello world message'
+        ),
+        'fullname': fields.String(
+            readonly=True,
+            description='Hello world message'
+        ),
+        'username': fields.String(
+            readonly=True,
+            description='Hello world message'
+        ),
+        'password': fields.String(
+            readonly=True,
+            description='Hello world message'
+        ),
+        'email': fields.String(
+            readonly=True,
+            description='Hello world message'
+        )
+    }

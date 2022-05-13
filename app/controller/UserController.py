@@ -1,20 +1,16 @@
 from flask import jsonify, make_response
-from flask_restful import Resource, reqparse, marshal_with, abort, request
+from flask_restful import request
+from flask_restx import Namespace, Resource, marshal_with, abort
 
 from ..main.database import db
 from ..model.user import User as UserModel
 
-video_put_args = reqparse.RequestParser()
-video_put_args.add_argument("id", type=int, help="id of the user is required", required=True)
-video_put_args.add_argument("fullname", type=str, help="fullname of the user is required", required=True)
-video_put_args.add_argument("username", type=str, help="username of the user is required", required=True)
-video_put_args.add_argument("password", type=str, help="password of the user is required", required=True)
-video_put_args.add_argument("email", type=str, help="email of the user is required", required=True)
-
-video_update_args = reqparse.RequestParser()
-video_update_args.add_argument("fullname", type=str, help="fullname of the user is required")
+namespace = Namespace('User', 'CRUD user endpoints')
+namespace_model = namespace.model("User", UserModel.resource_fields)
 
 
+@namespace.marshal_list_with(namespace_model)
+@namespace.route("/users/<int:id_user>/")
 class User(Resource):
 
     @marshal_with(UserModel.resource_fields)
@@ -26,26 +22,26 @@ class User(Resource):
 
     @marshal_with(UserModel.resource_fields)
     def put(self, id_user):
-        args = video_put_args.parse_args()
+        json_data = request.get_json()
         result = UserModel.query.filter_by(id=id_user).first()
         if result:
             abort(409, message="User id taken...")
 
-        video = UserModel(id=args['id'], fullname=args['fullname'], username=args['username'],
-                          password=args['password'], email=args['email'])
+        video = UserModel(id=json_data['id'], fullname=json_data['fullname'], username=json_data['username'],
+                          password=json_data['password'], email=json_data['email'])
         db.session.add(video)
         db.session.commit()
         return video, 201
 
     @marshal_with(UserModel.resource_fields)
     def patch(self, id_user):
-        args = video_update_args.parse_args()
+        json_data = request.get_json()
         result = UserModel.query.filter_by(id=id_user).first()
         if not result:
             abort(404, message="User doesn't exist, cannot update")
 
-        if args['fullname']:
-            result.fullname = args['fullname']
+        if json_data['fullname']:
+            result.fullname = json_data['fullname']
 
         db.session.commit()
 
@@ -61,6 +57,7 @@ class User(Resource):
         return '', 204
 
 
+@namespace.route("/users/")
 class UserList(Resource):
 
     @marshal_with(UserModel.resource_fields)
