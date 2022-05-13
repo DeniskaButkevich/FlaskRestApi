@@ -1,39 +1,27 @@
 from flask import jsonify, make_response
 from flask_restful import request
-from flask_restx import Namespace, Resource, marshal_with, abort
+from flask_restx import Namespace, Resource, abort
 
 from ..main.database import db
 from ..model.user import User as UserModel
 
-namespace = Namespace('User', 'CRUD user endpoints')
+namespace = Namespace('users', 'CRUD user endpoints')
 namespace_model = namespace.model("User", UserModel.resource_fields)
 
 
 @namespace.marshal_list_with(namespace_model)
-@namespace.route("/users/<int:id_user>/")
+@namespace.route("/<int:id_user>/")
 class User(Resource):
 
-    @marshal_with(UserModel.resource_fields)
+    @namespace.marshal_with(namespace_model)
     def get(self, id_user):
         result = UserModel.query.filter_by(id=id_user).first()
         if not result:
             abort(404, message="Could not find user with that id")
         return result
 
-    @marshal_with(UserModel.resource_fields)
-    def put(self, id_user):
-        json_data = request.get_json()
-        result = UserModel.query.filter_by(id=id_user).first()
-        if result:
-            abort(409, message="User id taken...")
-
-        video = UserModel(id=json_data['id'], fullname=json_data['fullname'], username=json_data['username'],
-                          password=json_data['password'], email=json_data['email'])
-        db.session.add(video)
-        db.session.commit()
-        return video, 201
-
-    @marshal_with(UserModel.resource_fields)
+    @namespace.expect(namespace_model)
+    @namespace.marshal_with(namespace_model)
     def patch(self, id_user):
         json_data = request.get_json()
         result = UserModel.query.filter_by(id=id_user).first()
@@ -47,7 +35,7 @@ class User(Resource):
 
         return result
 
-    @marshal_with(UserModel.resource_fields)
+    @namespace.marshal_with(namespace_model)
     def delete(self, id_user):
         result = UserModel.query.filter_by(id=id_user).first()
         if not result:
@@ -57,29 +45,44 @@ class User(Resource):
         return '', 204
 
 
-@namespace.route("/users/")
+@namespace.marshal_list_with(namespace_model)
+@namespace.route("")
 class UserList(Resource):
 
-    @marshal_with(UserModel.resource_fields)
+    @namespace.marshal_with(namespace_model)
     def get(self):
         result = UserModel.query.all()
         return result
 
-    @marshal_with(UserModel.resource_fields)
+    @namespace.expect(namespace_model)
+    @namespace.marshal_with(namespace_model)
+    def put(self):
+        json_data = request.get_json()
+        user = UserModel.query.filter_by(id=json_data['id']).first()
+        if user:
+            abort(409, message="User id taken...")
+
+        user = UserModel(fullname=json_data['fullname'], username=json_data['username'],
+                         password=json_data['password'], email=json_data['email'])
+        db.session.add(user)
+        db.session.commit()
+        return user, 201
+
+    @namespace.expect(namespace_model)
     def post(self):
         full_json_data = request.get_json()
         users = []
-        for x in full_json_data:
+        for item in full_json_data:
 
-            result = UserModel.query.filter_by(id=x['id']).first()
-            if result:
+            user = UserModel.query.filter_by(id=item['id']).first()
+            if user:
                 abort(409, message="User id taken...")
 
-            user = UserModel(id=x['id'], fullname=x['fullname'], username=x['username'],
-                             password=x['password'], email=x['email'])
+            user = UserModel(fullname=item['fullname'], username=item['username'],
+                             password=item['password'], email=item['email'])
             db.session.add(user)
             users.append(user)
 
         db.session.commit()
-        data = [{'id': p.id, 'fullname': p.fullname, 'password': p.password} for p in users]
+        data = [{'id': u.id, 'fullname': u.fullname, 'password': u.password} for u in users]
         return make_response(jsonify(data), 201)
