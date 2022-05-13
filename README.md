@@ -57,6 +57,14 @@ customized with more functionalities.
 python manage.py runserver
 ```
 
+### Swagger UI
+
+Swagger UI url
+
+```
+http://127.0.0.1:5000/api/doc
+```
+
 ### Alembic Migrations
 
 Use the following commands to create a new migration file and update the database with the last migrations version:
