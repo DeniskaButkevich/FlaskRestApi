@@ -23,7 +23,7 @@ class Config:
     # sqlalchemy database main
     # --------------------------------------------------------------------
     SQLALCHEMY_DATABASE_URI = "postgresql://admin:admin@localhost/flaskbd"
-    SQLALCHEMY_TRACK_MODIFICATIONS = True
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'executemany_mode': 'batch',
         'client_encoding': 'utf8',

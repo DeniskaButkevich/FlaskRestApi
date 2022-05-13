@@ -16,14 +16,16 @@ app.config.from_object(main.settings[os.environ.get('APPLICATION_ENV', 'default'
 console = logging.getLogger('console')
 
 # Database ORM Initialization
-# from app import model
+from app import model
 
 db.init_app(app)
 # Database Migrations Initialization
-# migration.init_app(app, db)
+migration.init_app(app, db)
 
 # Flask API Initialization
 api.init_app(app)
 
 # _____________________________________
 # app.app_context().push()
+# with app.app_context():
+#     db.create_all()

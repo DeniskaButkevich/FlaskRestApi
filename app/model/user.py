@@ -1,7 +1,7 @@
 from sqlalchemy import Integer, String
 from sqlalchemy_utils import EmailType
-
-from app import db
+from flask_restful import fields
+from ..main.database import db
 
 
 class User(db.Model):
@@ -16,7 +16,16 @@ class User(db.Model):
     password = db.Column(String(50), nullable=False)
     email = db.Column(EmailType(), nullable=False, unique=True)
 
-    def __init__(self, fullname, username, password, email):
+    resource_fields = {
+        'id': fields.Integer,
+        'fullname': fields.String,
+        'username': fields.String,
+        'password': fields.String,
+        'email': fields.String
+    }
+
+    def __init__(self, id, fullname, username, password, email):
+        self.id = id
         self.fullname = fullname
         self.username = username
         self.password = password
