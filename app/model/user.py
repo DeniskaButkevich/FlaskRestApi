@@ -17,8 +17,7 @@ class User(db.Model):
     password = db.Column(String(50), nullable=False)
     email = db.Column(EmailType(), nullable=False, unique=True)
 
-    def __init__(self, id, fullname, username, password, email):
-        self.id = id
+    def __init__(self, fullname, username, password, email):
         self.fullname = fullname
         self.username = username
         self.password = password
@@ -27,25 +26,31 @@ class User(db.Model):
     def __repr__(self):
         return "<User(fullname='%s', username='%s')>" % (self.fullname, self.username)
 
+    """It's for swagger description"""
     resource_fields = {
         'id': fields.Integer(
-            readonly=True,
-            description='Hello world message'
+            description='id',
+            example=14,
+            title='should be unique',
+            required=True
+
         ),
         'fullname': fields.String(
-            readonly=True,
-            description='Hello world message'
+            description='Name of person',
+            example='Denis Denisov'
         ),
         'username': fields.String(
-            readonly=True,
-            description='Hello world message'
+            description='Username of person',
+            example='dez',
+            title='should be unique'
         ),
         'password': fields.String(
-            readonly=True,
-            description='Hello world message'
+            description='secret password',
+            example='1234'
         ),
         'email': fields.String(
-            readonly=True,
-            description='Hello world message'
+            description='Email',
+            example='dez@dez.com',
+            title='should be unique'
         )
     }
