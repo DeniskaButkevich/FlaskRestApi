@@ -1,5 +1,4 @@
-from flask import jsonify, make_response
-from flask_restful import request
+from flask import jsonify, make_response, request
 from flask_restx import Namespace, Resource, marshal_with, abort
 
 from ..main.database import db
