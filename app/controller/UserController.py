@@ -1,5 +1,4 @@
-from flask import jsonify, make_response
-from flask_restful import request
+from flask import request
 from flask_restx import Namespace, Resource, abort
 
 from ..main.database import db
@@ -15,34 +14,32 @@ class User(Resource):
 
     @namespace.marshal_with(namespace_model)
     def get(self, id_user):
-        result = UserModel.query.filter_by(id=id_user).first()
-        if not result:
-            abort(404, message="Could not find user with that id")
-        return result
+        return self.if_exist_user(id_user)
 
     @namespace.expect(namespace_model)
     @namespace.marshal_with(namespace_model)
     def patch(self, id_user):
         json_data = request.get_json()
-        result = UserModel.query.filter_by(id=id_user).first()
-        if not result:
-            abort(404, message="User doesn't exist, cannot update")
+        user = self.if_exist_user(id_user)
 
         if json_data['fullname']:
-            result.fullname = json_data['fullname']
-
+            user.fullname = json_data['fullname']
         db.session.commit()
-
-        return result
+        return user
 
     @namespace.marshal_with(namespace_model)
     def delete(self, id_user):
-        result = UserModel.query.filter_by(id=id_user).first()
-        if not result:
-            abort(404, message="User doesn't exist, cannot delete")
-        db.session.delete(result)
+        user = self.if_exist_user(id_user)
+        db.session.delete(user)
         db.session.commit()
         return '', 204
+
+    @staticmethod
+    def if_exist_user(id_user):
+        user = UserModel.query.filter_by(id=id_user).first()
+        if not user:
+            abort(404, message="Could not find user with that id")
+        return user
 
 
 @namespace.marshal_list_with(namespace_model)
@@ -58,6 +55,7 @@ class UserList(Resource):
     @namespace.marshal_with(namespace_model)
     def put(self):
         json_data = request.get_json()
+
         user = UserModel.query.filter_by(id=json_data['id']).first()
         if user:
             abort(409, message="User id taken...")
@@ -67,22 +65,3 @@ class UserList(Resource):
         db.session.add(user)
         db.session.commit()
         return user, 201
-
-    @namespace.expect(namespace_model)
-    def post(self):
-        full_json_data = request.get_json()
-        users = []
-        for item in full_json_data:
-
-            user = UserModel.query.filter_by(id=item['id']).first()
-            if user:
-                abort(409, message="User id taken...")
-
-            user = UserModel(fullname=item['fullname'], username=item['username'],
-                             password=item['password'], email=item['email'])
-            db.session.add(user)
-            users.append(user)
-
-        db.session.commit()
-        data = [{'id': u.id, 'fullname': u.fullname, 'password': u.password} for u in users]
-        return make_response(jsonify(data), 201)
