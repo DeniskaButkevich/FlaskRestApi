@@ -1,5 +1,6 @@
 from flask_restx import fields
 from sqlalchemy import Integer, String
+from sqlalchemy.orm import relationship
 from sqlalchemy_utils import EmailType
 
 from ..main.database import db
@@ -16,6 +17,7 @@ class User(db.Model):
     username = db.Column(String(20), nullable=False, unique=True)
     password = db.Column(String(50), nullable=False)
     email = db.Column(EmailType(), nullable=False, unique=True)
+    orders = relationship("Order", back_populates="user")
 
     def __init__(self, fullname, username, password, email):
         self.fullname = fullname

@@ -3,6 +3,8 @@ from flask_restx import Api
 
 from app.controller.ProductController import namespace as product_namespace
 from app.controller.UserController import namespace as user_namespace
+from app.controller.OrderController import namespace as order_namespace
+from app.controller.CategoryController import namespace as category_namespace
 from app.main.errors import errors
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
@@ -21,3 +23,5 @@ api = Api(
 
 api.add_namespace(user_namespace)
 api.add_namespace(product_namespace)
+api.add_namespace(order_namespace)
+api.add_namespace(category_namespace)
