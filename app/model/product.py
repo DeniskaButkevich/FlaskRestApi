@@ -1,9 +1,9 @@
-from flask_restx import fields
+from flask_restx import fields, Namespace
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
 
-import app.model
 from ..main.database import db
+
 
 class Product(db.Model):
     """
@@ -36,36 +36,52 @@ class Product(db.Model):
         return "<Product(name='%s', description='%s')>" % (self.name, self.description)
 
 
-    """It's for swagger description"""
-    resource_fields = {
-        'id': fields.Integer(
-            description='id',
-            example='44'
-        ),
-        'name': fields.String(
-            description='Name of product',
-            example='Spun'
-        ),
-        'description': fields.String(
-            description='Descriptions of product',
-            example='For doing something'
-        ),
-        'price': fields.Integer(
-            description='Price via BigInteger',
-            example=33
-        )
-    }
-    update_fields = {
-        'name': fields.String(
-            description='Name of product',
-            example='Spun'
-        ),
-        'description': fields.String(
-            description='Descriptions of product',
-            example='For doing something'
-        ),
-        'price': fields.Integer(
-            description='Price via BigInteger',
-            example=33
-        )
-    }
+"""It's for swagger description"""
+nested_category = {
+    'id': fields.Integer(
+        description='id',
+        example='101'
+    ),
+    'name': fields.String(
+        description='Name of category',
+        example='Food'
+    )
+}
+"""It's for swagger description"""
+resource_fields = {
+    'id': fields.Integer(
+        description='id',
+        example='44'
+    ),
+    'name': fields.String(
+        description='Name of product',
+        example='Spun'
+    ),
+    'description': fields.String(
+        description='Descriptions of product',
+        example='For doing something'
+    ),
+    'price': fields.Integer(
+        description='Price via BigInteger',
+        example=33
+    )
+}
+update_fields = {
+    'name': fields.String(
+        description='Name of product',
+        example='Spun'
+    ),
+    'description': fields.String(
+        description='Descriptions of product',
+        example='For doing something'
+    ),
+    'price': fields.Integer(
+        description='Price via BigInteger',
+        example=33
+    )
+}
+
+namespace = Namespace('product', 'CRUD product endpoints')
+model = namespace.model("Products", resource_fields)
+model['categories'] = fields.Nested(namespace.model("nested_category", nested_category))
+model_update = namespace.model("ProductsUpdate", update_fields)
