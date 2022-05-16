@@ -1,9 +1,9 @@
 from datetime import datetime
 
 from sqlalchemy import Integer, String, ForeignKey, TIMESTAMP
-from flask_restx import fields
+from flask_restx import fields, Namespace
 from sqlalchemy.orm import relationship
-
+from ..model.product import model as ProductModel
 from ..main.database import db
 
 
@@ -15,7 +15,7 @@ class Order(db.Model):
 
     id = db.Column(Integer, primary_key=True, unique=True)
     address = db.Column(String, nullable=False)
-    data = db.Column(TIMESTAMP)
+    date = db.Column(TIMESTAMP)
     status = db.Column(Integer)
 
     user_id = db.Column(Integer, ForeignKey('users.id'))
@@ -32,28 +32,56 @@ class Order(db.Model):
         self.address = address
         self.products = products
         self.status = 1
-        self.data = datetime.now()
+        self.date = datetime.now()
         self.user = user
 
     def __repr__(self):
         return "<Product(name='%s', description='%s')>" % (self.name, self.description)
 
-    """It's for swagger description"""
-    resource_fields = {
-        'id': fields.Integer(
-            description='id',
-            example='44'
-        ),
-        'name': fields.String(
-            description='Name of product',
-            example='Spun'
-        ),
-        'description': fields.String(
-            description='Descriptions of product',
-            example='For doing something'
-        ),
-        'price': fields.Integer(
-            description='Price via BigInteger',
-            example=33
-        )
-    }
+
+"""It's for swagger description"""
+resource_fields = {
+    'address': fields.String(
+        description='Address of delivery',
+        example='GROVE STREET'
+    ),
+    'date': fields.DateTime(
+        description='Date of order',
+        example='For doing something'
+    ),
+    'status': fields.Integer(
+        description='Status of order',
+        example=2
+    ),
+    'products': fields.Nested(ProductModel)
+}
+
+nested_user = {
+    'id': fields.Integer(
+        description='id',
+        example=14
+    ),
+    'fullname': fields.String(
+        description='Name of person',
+        example='Denis Denisov'
+    )
+}
+
+fields_patch = {
+    'status': fields.Integer(
+        description='Status of order',
+        example=3
+    )
+}
+
+namespace = Namespace('order', 'CRUD order endpoints')
+namespace_user = namespace.model("nested_category", nested_user)
+
+model = namespace.model("Order", resource_fields)
+model['user'] = fields.Nested(namespace_user)
+model['id'] = fields.Integer(description='id', example='44')
+
+model_put = namespace.model("Order_put", resource_fields)
+model_put['user'] = fields.Nested(namespace_user)
+
+model_patch = namespace.model("Order_patch", fields_patch)

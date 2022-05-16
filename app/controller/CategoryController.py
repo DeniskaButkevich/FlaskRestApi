@@ -1,25 +1,25 @@
 from flask import request
-from flask_restx import Namespace, Resource, abort, marshal_with, fields
+from flask_restx import Namespace, Resource, abort
 
 from ..model.category import Category as CategoryModel
 from ..model.product import Product as ProductModel
 from ..main.database import db
 
 namespace = Namespace('category', 'CRUD category endpoints')
-namespace_model = namespace.model("Categories", CategoryModel.resource_fields)
-namespace_model_update = namespace.model("CategoriesUpdate", CategoryModel.update_fields)
+model = namespace.model("Categories", CategoryModel.resource_fields)
+model_update = namespace.model("CategoriesUpdate", CategoryModel.update_fields)
 
 
 @namespace.route("/<int:id_category>/")
 class Category(Resource):
 
-    @namespace.marshal_with(namespace_model)
+    @namespace.marshal_with(model)
     def get(self, id_category):
         category = CategoryModel.query.filter_by(id=id_category).first()
         return category if category else abort(404, message="Could not find user with that id")
 
-    @namespace.expect(namespace_model_update)
-    @namespace.marshal_with(namespace_model)
+    @namespace.expect(model_update)
+    @namespace.marshal_with(model)
     def patch(self, id_category):
         json_data = request.get_json()
 
@@ -33,7 +33,7 @@ class Category(Resource):
         db.session.commit()
         return category
 
-    @namespace.marshal_with(namespace_model)
+    @namespace.marshal_with(model)
     def delete(self, id_category):
         category = CategoryModel.query.filter_by(id=id_category).first()
         if not category:
@@ -46,12 +46,12 @@ class Category(Resource):
 @namespace.route("")
 class CategoryList(Resource):
 
-    @namespace.marshal_with(namespace_model)
+    @namespace.marshal_with(model)
     def get(self):
         return CategoryModel.query.all()
 
-    @namespace.expect(namespace_model_update)
-    @namespace.marshal_with(namespace_model)
+    @namespace.expect(model_update)
+    @namespace.marshal_with(model)
     def put(self):
         json_data = request.get_json()
         category = CategoryModel.query.filter_by(name=json_data['name']).first()
@@ -67,7 +67,7 @@ class CategoryList(Resource):
 @namespace.route("/<int:id_category>/product/<int:id_product>")
 class CategoryProduct(Resource):
 
-    @namespace.marshal_with(namespace_model)
+    @namespace.marshal_with(model)
     def patch(self, id_category, id_product):
         category = CategoryModel.query.filter_by(id=id_category).first()
         product = ProductModel.query.filter_by(id=id_product).first()

@@ -1,32 +1,60 @@
-from flask_restx import Namespace, Resource
+from flask import request
+from flask_restx import Resource, abort
 
-from ..model.order import Order as OrderModel
+from ..model.order import Order as Model, model, model_patch, model_put, namespace
+from ..main.database import db
+from ..model.product import Product as ProductModel
+from ..model.user import User as UserModel
 
-namespace = Namespace('order', 'CRUD order endpoints')
-namespace_model = namespace.model("Order", OrderModel.resource_fields)
 
-
-@namespace.marshal_list_with(namespace_model)
 @namespace.route("/<int:id_order>/")
 class Order(Resource):
 
+    @namespace.marshal_with(model)
     def get(self, id_order):
-        pass
+        order = Model.query.filter_by(id=id_order).first()
+        return order if order else abort(404, message="Could not find order with that id")
 
+    @namespace.expect(model_patch)
+    @namespace.marshal_with(model)
     def patch(self, id_order):
-        pass
+        json_data = request.get_json()
+        order = Model.query.filter_by(id=id_order).first()
+        if not order:
+            abort(404, message="Order doesn't exist, cannot update")
 
-    def delete(self, id_order):
-        pass
+        if json_data['status']:
+            order.status = json_data['status']
+
+        db.session.commit()
+        return order
+
+    @staticmethod
+    def delete(id_order):
+        order = Model.query.filter_by(id=id_order).first()
+        if not order:
+            abort(404, message="Order doesn't exist, cannot delete")
+        db.session.delete(order)
+        db.session.commit()
+        return '', 204
 
 
-@namespace.marshal_list_with(namespace_model)
 @namespace.route("")
 class OrderList(Resource):
 
+    @namespace.marshal_with(model)
     def get(self):
-        pass
+        return Model.query.all()
 
+    @namespace.expect(model_put)
+    @namespace.marshal_with(model)
     def put(self):
-        pass
-
+        json_data = request.get_json()
+        products_f = []
+        pp = ProductModel.query.filter_by(id=json_data['products']['id']).first()
+        uu = UserModel.query.filter_by(id=json_data['user']['id']).first()
+        products_f.append(pp)
+        order = Model(address=json_data['address'], products=products_f, user=uu)
+        db.session.add(order)
+        db.session.commit()
+        return order, 201
