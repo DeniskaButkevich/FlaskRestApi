@@ -7,7 +7,7 @@ Flask-SQLAlchemy==2.5.1
 flask_restx==0.5.1
 
 # СУБД
-SQLAlchemy
+SQLAlchemy~=1.4.36
 SQLAlchemy-Utils
 psycopg2-binary==2.9.3
 
@@ -18,8 +18,8 @@ pydantic==1.9.0
 alembic==1.7.7
 
 # Логгирование
-Loguru
+Loguru==0.6.0
 
 # Тестирование
-PyTest
-
+PyTest==7.1.2
+starlette~=0.20.0
