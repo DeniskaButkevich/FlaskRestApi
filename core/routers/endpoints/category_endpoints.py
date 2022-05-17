@@ -1,19 +1,28 @@
 from flask import request
 from flask_restx import Namespace, Resource, abort
+from fastapi import status
 
-from ..model.category import Category as CategoryModel
-from ..model.product import Product as ProductModel
-from ..main.database import db
+from core.model.category import Category as CategoryModel
+from core.model.product import Product as ProductModel
+from core.main.database import db
 
 namespace = Namespace('category', 'CRUD category endpoints')
 model = namespace.model("Categories", CategoryModel.resource_fields)
 model_update = namespace.model("CategoriesUpdate", CategoryModel.update_fields)
 
 
+# @app.get("/", status_code=status.HTTP_201_CREATE)
+# def root():
+#     return {"message": "Hello World"}
+
+##  Create ToDoRequest Base Model
+# class ToDoRequest(BaseModel):
+#     task: str
+
 @namespace.route("/<int:id_category>/")
 class Category(Resource):
 
-    @namespace.marshal_with(model)
+    # @namespace.marshal_with(model)
     def get(self, id_category):
         category = CategoryModel.query.filter_by(id=id_category).first()
         return category if category else abort(404, message="Could not find user with that id")
@@ -53,6 +62,8 @@ class CategoryList(Resource):
     @namespace.expect(model_update)
     @namespace.marshal_with(model)
     def put(self):
+        # def put(self, todo: ToDoRequest):
+
         json_data = request.get_json()
         category = CategoryModel.query.filter_by(name=json_data['name']).first()
         if category:

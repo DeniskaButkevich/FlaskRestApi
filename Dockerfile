@@ -17,7 +17,7 @@ RUN set -eux \
         libressl-dev libffi-dev gcc musl-dev python3-dev \
         postgresql-dev bash \
     && pip install --upgrade pip setuptools wheel \
-    && pip install -r /usr/src/app/requirements.txt \
+    && pip install -r /usr/src/core/requirements.txt \
     && rm -rf /root/.cache/pip
 
 # copy project

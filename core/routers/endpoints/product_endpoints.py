@@ -1,8 +1,8 @@
 from flask import request
 from flask_restx import Resource, abort
 
-from ..main.database import db
-from ..model.product import Product as Model, model, model_update, namespace
+from core.main.database import db
+from core.model.product import Product as Model, model, model_update, namespace
 
 
 @namespace.route("/<int:id_product>/")

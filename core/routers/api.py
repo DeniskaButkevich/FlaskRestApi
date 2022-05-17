@@ -1,11 +1,11 @@
 from flask import Blueprint
 from flask_restx import Api
 
-from app.controller.ProductController import namespace as product_namespace
-from app.controller.UserController import namespace as user_namespace
-from app.controller.OrderController import namespace as order_namespace
-from app.controller.CategoryController import namespace as category_namespace
-from app.main.errors import errors
+from core.routers.endpoints.product_endpoints import namespace as product_namespace
+from core.routers.endpoints.user_endpoints import namespace as user_namespace
+from core.routers.endpoints.order_endpoints import namespace as order_namespace
+from core.routers.endpoints.category_endpoints import namespace as category_namespace
+from core.main.errors import errors
 
 blueprint = Blueprint('api', __name__, url_prefix='/api')
 

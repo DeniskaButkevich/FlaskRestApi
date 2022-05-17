@@ -1,10 +1,10 @@
 from flask import request
 from flask_restx import Resource, abort
 
-from ..model.order import Order as Model, model, model_patch, model_put, namespace
-from ..main.database import db
-from ..model.product import Product as ProductModel
-from ..model.user import User as UserModel
+from core.model.order import Order as Model, model, model_patch, model_put, namespace
+from core.main.database import db
+from core.model.product import Product as ProductModel
+from core.model.user import User as UserModel
 
 
 @namespace.route("/<int:id_order>/")

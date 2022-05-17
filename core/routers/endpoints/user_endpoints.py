@@ -1,8 +1,8 @@
 from flask import request
 from flask_restx import Namespace, Resource, abort
 
-from ..main.database import db
-from ..model.user import User as UserModel
+from core.main.database import db
+from core.model.user import User as UserModel
 
 namespace = Namespace('users', 'CRUD user endpoints')
 namespace_model = namespace.model("User", UserModel.resource_fields)
@@ -12,7 +12,7 @@ namespace_model = namespace.model("User", UserModel.resource_fields)
 @namespace.route("/<int:id_user>/")
 class User(Resource):
 
-    @namespace.marshal_with(namespace_model)
+    @namespace.marshal_with(namespace_model, )
     def get(self, id_user):
         return self.if_exist_user(id_user)
 

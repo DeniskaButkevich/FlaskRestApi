@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 
-
 class Config:
     # project root directory
     BASE_DIR = os.path.join(os.pardir, os.path.dirname(__file__))
