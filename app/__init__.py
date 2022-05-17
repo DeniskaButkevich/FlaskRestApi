@@ -11,7 +11,7 @@ from app.main.logging import LOGGING_CONFIG
 
 # Flask App Initialization
 app = Flask(__name__)
-app.config.from_object(main.settings[os.environ.get('APPLICATION_ENV', 'default')])
+app.config.from_object(main.settings[os.environ.get('APPLICATION_ENV', 'testing')])
 
 # from app import model
 console = logging.getLogger('console')
@@ -19,13 +19,13 @@ console = logging.getLogger('console')
 # Database ORM Initialization
 db.init_app(app)
 
-# Database Migrations Initialization
-migration.init_app(app, db)
+# # Database Migrations Initialization
+# migration.init_app(app, db)
 
 # Flask API Initialization
 app.register_blueprint(documented_endpoint)
 
 # _____________________________________
 # app.app_context().push()
-# with app.app_context():
-#     db.create_all()
+with app.app_context():
+    db.create_all()

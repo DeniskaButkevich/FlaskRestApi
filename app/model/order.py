@@ -3,7 +3,7 @@ from datetime import datetime
 from sqlalchemy import Integer, String, ForeignKey, TIMESTAMP
 from flask_restx import fields, Namespace
 from sqlalchemy.orm import relationship
-from ..model.product import model as ProductModel
+from ..model.product import model as product_model
 from ..main.database import db
 
 
@@ -53,7 +53,7 @@ resource_fields = {
         description='Status of order',
         example=2
     ),
-    'products': fields.Nested(ProductModel)
+    'products': fields.Nested(product_model)
 }
 
 nested_user = {

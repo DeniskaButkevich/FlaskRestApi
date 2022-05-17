@@ -57,6 +57,26 @@ customized with more functionalities.
 python manage.py runserver
 ```
 
+### Testing 
+```
+python -m pytest tests/unit/
+python -m pytest tests/functional/
+```
+To really get a sense of when the `test_client()` fixture is run, 
+pytest can provide a call structure of the fixtures and tests with the `--setup-show` argument:
+```
+(venv)$ python -m pytest --setup-show tests/functional/test_recipes.py
+====================================== test session starts =====================================
+
+tests/functional/test_recipes.py
+  ...
+  SETUP    M test_client
+      functional/test_recipes.py::test_home_page_with_fixture (fixtures used: test_client).
+      functional/test_recipes.py::test_home_page_post_with_fixture (fixtures used: test_client).
+  TEARDOWN M test_client
+======================================= 4 passed in 0.18s ======================================
+```
+
 ### Swagger UI
 
 Swagger UI url

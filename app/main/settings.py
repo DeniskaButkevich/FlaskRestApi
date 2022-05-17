@@ -43,6 +43,8 @@ class TestingConfig(Config):
     ENV = os.environ.get("FLASK_ENV", "testing")
     DEBUG = True
     TESTING = True
+    DATABASE_URL = "postgresql://admin:admin@db:5432/flaskdb"
+    SQLALCHEMY_DATABASE_URI = "postgresql://admin:admin@db:5432/flaskdb"
 
 
 class ProductionConfig(Config):
