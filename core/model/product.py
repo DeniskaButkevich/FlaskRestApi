@@ -1,19 +1,19 @@
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, Column, ForeignKey
 from sqlalchemy.orm import relationship
 
-from ..main.database import db
+from ..main.database import Base
 
 
-class Product(db.Model):
+class Product(Base):
     """
     This is a base product Model
     """
     __tablename__ = 'products'
 
-    id = db.Column(Integer, primary_key=True, unique=True)
-    name = db.Column(String(20), nullable=False)
-    description = db.Column(String(200))
-    price = db.Column(Integer, nullable=False)
+    id = Column(Integer, primary_key=True, unique=True)
+    name = Column(String(20), nullable=False)
+    description = Column(String(200))
+    price = Column(Integer, nullable=False)
 
     categories = relationship(
         "Category",
@@ -35,52 +35,35 @@ class Product(db.Model):
         return "<Product(name='%s', description='%s')>" % (self.name, self.description)
 
 
-"""It's for swagger description"""
-nested_category = {
-    # 'id': fields.Integer(
-    #     description='id',
-    #     example='101'
-    # ),
-    # 'name': fields.String(
-    #     description='Name of category',
-    #     example='Food'
-    # )
-}
-"""It's for swagger description"""
-resource_fields = {
-    # 'id': fields.Integer(
-    #     description='id',
-    #     example='44'
-    # ),
-    # 'name': fields.String(
-    #     description='Name of product',
-    #     example='Spun'
-    # ),
-    # 'description': fields.String(
-    #     description='Descriptions of product',
-    #     example='For doing something'
-    # ),
-    # 'price': fields.Integer(
-    #     description='Price via BigInteger',
-    #     example=33
-    # )
-}
-update_fields = {
-    # 'name': fields.String(
-    #     description='Name of product',
-    #     example='Spun'
-    # ),
-    # 'description': fields.String(
-    #     description='Descriptions of product',
-    #     example='For doing something'
-    # ),
-    # 'price': fields.Integer(
-    #     description='Price via BigInteger',
-    #     example=33
-    # )
-}
+class ProductOrder(Base):
+    """
+    This is association table for product and order
+    """
+    __tablename__ = 'product_order_m_to_m'
 
-# namespace = Namespace('product', 'CRUD product endpoints')
-# model = namespace.model("Products", resource_fields)
-# model['categories'] = fields.Nested(namespace.model("nested_category", nested_category))
-# model_update = namespace.model("ProductsUpdate", update_fields)
+    product_id = Column(
+        Integer,
+        ForeignKey('products.id'),
+        primary_key=True)
+
+    order_id = Column(
+        Integer,
+        ForeignKey('orders.id'),
+        primary_key=True)
+
+
+class ProductCategory(Base):
+    """
+    This is association table for category and product
+    """
+    __tablename__ = 'product_category_m_to_m'
+
+    category_id = Column(
+        Integer,
+        ForeignKey('categories.id'),
+        primary_key=True)
+
+    product_id = Column(
+        Integer,
+        ForeignKey('products.id'),
+        primary_key=True)

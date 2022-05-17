@@ -1,18 +1,17 @@
-from flask_restx import fields
-from sqlalchemy import Integer, String
+from sqlalchemy import Integer, String, Column
 from sqlalchemy.orm import relationship
 
-from ..main.database import db
+from ..main.database import Base
 
 
-class Category(db.Model):
+class Category(Base):
     """
     This is a base category Model
     """
     __tablename__ = 'categories'
 
-    id = db.Column(Integer, primary_key=True, unique=True)
-    name = db.Column(String, unique=True, nullable=False)
+    id = Column(Integer, primary_key=True, unique=True)
+    name = Column(String, unique=True, nullable=False)
 
     products = relationship(
         "Product",
@@ -27,22 +26,3 @@ class Category(db.Model):
 
     def __repr__(self):
         return "<Category(id='%d', name='%s')>" % (self.id, self.name)
-
-    """It's for swagger description"""
-    resource_fields = {
-        'id': fields.Integer(
-            description='id',
-            example='101'
-        ),
-        'name': fields.String(
-            description='Name of category',
-            example='Food'
-        )
-    }
-
-    update_fields = {
-        'name': fields.String(
-            description='Name of category',
-            example='Food'
-        )
-    }
