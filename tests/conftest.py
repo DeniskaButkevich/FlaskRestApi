@@ -1,7 +1,6 @@
 import os
 
 import pytest
-
 from app import app, main
 from app.model import User
 

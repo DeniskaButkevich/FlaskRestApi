@@ -8,21 +8,15 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY")
     FAB_API_SWAGGER_UI = True
 
-    # Flask Configuration
+    # FastAPI Configuration
     # --------------------------------------------------------------------
     DEBUG = False
     TESTING = False
     CSRF_ENABLED = True
 
-    # log file path
-    # --------------------------------------------------------------------
-    enable_access_log = False
-    log_socket_host = "127.0.0.1"
-    log_socket_port = 514
-
     # sqlalchemy database main
     # --------------------------------------------------------------------
-    SQLALCHEMY_DATABASE_URI = "postgresql://admin:admin@localhost/flaskbd"
+    SQLALCHEMY_DATABASE_URI = "postgresql://admin:admin@localhost/fast_db"
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         'executemany_mode': 'batch',
@@ -34,21 +28,21 @@ class Config:
 
 
 class DevelopmentConfig(Config):
-    ENV = os.environ.get("FLASK_ENV", "development")
+    # ENV = os.environ.get("FLASK_ENV", "development")
     DEBUG = True
     ASSETS_DEBUG = True
 
 
 class TestingConfig(Config):
-    ENV = os.environ.get("FLASK_ENV", "testing")
+    # ENV = os.environ.get("FLASK_ENV", "testing")
     DEBUG = True
     TESTING = True
-    DATABASE_URL = "postgresql://admin:admin@db:5432/flaskdb"
-    SQLALCHEMY_DATABASE_URI = "postgresql://admin:admin@db:5432/flaskdb"
+    DATABASE_URL = "postgresql://admin:admin@db:5432/fast_db"
+    SQLALCHEMY_DATABASE_URI = "postgresql://admin:admin@db:5432/fast_db"
 
 
 class ProductionConfig(Config):
-    ENV = os.environ.get("FLASK_ENV", "production")
+    # ENV = os.environ.get("FLASK_ENV", "production")
     DEBUG = False
     USE_RELOADER = False
 

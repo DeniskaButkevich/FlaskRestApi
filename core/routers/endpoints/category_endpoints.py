@@ -1,91 +1,83 @@
+from fastapi import status, Depends, HTTPException, APIRouter
+from sqlalchemy.orm import Session
 
-from fastapi import status
-from werkzeug.exceptions import abort
+from core import models
+from core import schemas
+from core.main.database import get_db
 
-from core.model.category import Category as CategoryModel
-from core.model.product import Product as ProductModel
-
-from core import app
-# @app.get("/", status_code=status.HTTP_201_CREATE)
-# def root():
-#     return {"message": "Hello World"}
-
-##  Create ToDoRequest Base Model
-# class ToDoRequest(BaseModel):
-#     task: str
+router = APIRouter(
+    prefix="/category",
+    tags=["Category"],
+)
 
 
-@app.get("/id_category/<int:id_category>/")
-def get(self, id_category):
-    category = CategoryModel.query.filter_by(id=id_category).first()
-    return category if category else abort(404, message="Could not find user with that id")
-
-@app.patch("/id_category/<int:id_category>/", response_model=CategoryModel)
-def patch(category: CategoryModel):
-
-    category = CategoryModel.query.filter_by(id=id_category).first()
-    if not category:
-        abort(404, message="Category doesn't exist, cannot update")
-
-    if json_data['name']:
-        category.name = json_data['name']
-
-    db.session.commit()
+@router.get("/{id_category}/", response_model=schemas.Category, status_code=status.HTTP_200_OK)
+def get_category(id_category: int, db: Session = Depends(get_db)):
+    category = db.query(models.Category).filter_by(id=id_category).first()
+    if category is None:
+        raise HTTPException(status_code=404, detail="Could not find user with that id")
     return category
 
-@namespace.marshal_with(model)
-def delete(self, id_category):
-    category = CategoryModel.query.filter_by(id=id_category).first()
+
+@router.get("/", response_model=schemas.Category, status_code=status.HTTP_200_OK)
+def get_all_category(db: Session = Depends(get_db)):
+    return db.query(models.Category).all()
+
+
+@router.post("/", response_model=schemas.Category, status_code=status.HTTP_201_CREATED)
+def add_category(category: schemas.CategoryCreate, db: Session = Depends(get_db)):
+    bd_category = db.query(models.Category).filter_by(name=category.name).first()
+    if bd_category:
+        raise HTTPException(status_code=404, detail="Category name taken...")
+    db_category = models.Category(name=category.name)
+    db.add(db_category)
+    db.commit()
+    return db_category
+
+
+@router.put("/{id_category}/", response_model=schemas.ProductUpdate, status_code=status.HTTP_202_ACCEPTED)
+def update_category(id_category: int, category: schemas.CategoryUpdate, db: Session = Depends(get_db)):
+    db_category = models.Category.query.filter_by(id=id_category).first()
     if not category:
-        abort(404, message="Category doesn't exist, cannot delete")
-    db.session.delete(category)
-    db.session.commit()
-    return '', 204
+        raise HTTPException(status_code=404, detail="Category doesn't exist, cannot update")
+
+    if db_category.name:
+        db_category.name = category.name
+
+    db.add(db_category)
+    db.commit()
+    db.refresh(db_category)
+    return db_category
 
 
-@namespace.route("")
-class CategoryList(Resource):
-
-@namespace.marshal_with(model)
-def get(self):
-    return CategoryModel.query.all()
-
-@namespace.expect(model_update)
-@namespace.marshal_with(model)
-def put(self):
-    # def put(self, todo: ToDoRequest):
-
-    json_data = request.get_json()
-    category = CategoryModel.query.filter_by(name=json_data['name']).first()
-    if category:
-        abort(409, message="Category name taken...")
-
-    category = CategoryModel(name=json_data['name'])
-    db.session.add(category)
-    db.session.commit()
-    return category, 201
+@router.delete("/{id_category}/", status_code=status.HTTP_202_ACCEPTED)
+def delete_category(id_category: int, db: Session = Depends(get_db)):
+    category = models.Category.query.filter_by(id=id_category).first()
+    if not category:
+        raise HTTPException(status_code=404, detail="Category doesn't exist, cannot delete")
+    db.delete(category)
+    db.commit()
+    return
 
 
-@namespace.route("/<int:id_category>/product/<int:id_product>")
-class CategoryProduct(Resource):
+@router.patch("/{id_category}/product/{id_product}", response_model=schemas.Category,
+              status_code=status.HTTP_202_ACCEPTED)
+def add_product_to_category(id_category: int, id_product: int, db: Session = Depends(get_db)):
+    category = db.query(models.Category).filter_by(id=id_category).first()
+    product = db.query(models.Product).filter_by(id=id_product).first()
+    if not category or not product:
+        raise HTTPException(status_code=409, detail="Category or Product not found...")
+    category.products.append(product)
+    db.commit()
+    return category
 
-    @namespace.marshal_with(model)
-    def patch(self, id_category, id_product):
-        category = CategoryModel.query.filter_by(id=id_category).first()
-        product = ProductModel.query.filter_by(id=id_product).first()
-        if not category or not product:
-            abort(409, message="Category or Product not found...")
-        category.products.append(product)
-        db.session.commit()
-        return category
 
-    @staticmethod
-    def delete(id_category, id_product):
-        category = CategoryModel.query.filter_by(id=id_category).first()
-        product = ProductModel.query.filter_by(id=id_product).first()
-        if category or product:
-            abort(409, message="Category or Product not found...")
-        category.products.remove(product)
-        db.session.commit()
-        return '', 201
-
+@router.patch("/{id_category}/product/{id_product}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_product_to_category(id_category: int, id_product: int, db: Session = Depends(get_db)):
+    category = db.query(models.Category).filter_by(id=id_category).first()
+    product = db.query(models.Product).filter_by(id=id_product).first()
+    if category or product:
+        raise HTTPException(status_code=409, detail="Category or Product not found...")
+    category.products.remove(product)
+    db.commit()
+    return

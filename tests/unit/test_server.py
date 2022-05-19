@@ -1,5 +1,6 @@
-import pytest
 import socket as s
+
+import pytest
 
 
 @pytest.fixture
@@ -8,6 +9,7 @@ def socket(request):
 
     def socket_teardown():
         _socket.close()
+
     request.addfinalizer(socket_teardown)
     return _socket
 

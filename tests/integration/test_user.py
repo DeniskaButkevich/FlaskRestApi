@@ -1,6 +1,3 @@
-from app import app
-
-
 def test_get_all_users(test_client):
     response = test_client.get('/api/users')
     assert response.status_code == 200

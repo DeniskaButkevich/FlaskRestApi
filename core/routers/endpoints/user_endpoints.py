@@ -1,67 +1,56 @@
-from flask import request
-from flask_restx import Namespace, Resource, abort
+from fastapi import HTTPException, status, APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from core.main.database import db
-from core.model.user import User as UserModel
+from core import models
+from core import schemas
+from core.main.database import get_db
 
-namespace = Namespace('users', 'CRUD user endpoints')
-namespace_model = namespace.model("User", UserModel.resource_fields)
-
-
-@namespace.marshal_list_with(namespace_model)
-@namespace.route("/<int:id_user>/")
-class User(Resource):
-
-    @namespace.marshal_with(namespace_model, )
-    def get(self, id_user):
-        return self.if_exist_user(id_user)
-
-    @namespace.expect(namespace_model)
-    @namespace.marshal_with(namespace_model)
-    def patch(self, id_user):
-        json_data = request.get_json()
-        user = self.if_exist_user(id_user)
-
-        if json_data['fullname']:
-            user.fullname = json_data['fullname']
-        db.session.commit()
-        return user
-
-    @namespace.marshal_with(namespace_model)
-    def delete(self, id_user):
-        user = self.if_exist_user(id_user)
-        db.session.delete(user)
-        db.session.commit()
-        return '', 204
-
-    @staticmethod
-    def if_exist_user(id_user):
-        user = UserModel.query.filter_by(id=id_user).first()
-        if not user:
-            abort(404, message="Could not find user with that id")
-        return user
+router = APIRouter(
+    prefix="/user",
+    tags=["User"]
+)
 
 
-@namespace.marshal_list_with(namespace_model)
-@namespace.route("")
-class UserList(Resource):
+@router.get("/{id_user}", response_model=schemas.User, status_code=status.HTTP_200_OK)
+def get_user(self, id_user):
+    return self.if_exist_user(id_user)
 
-    @namespace.marshal_with(namespace_model)
-    def get(self):
-        result = UserModel.query.all()
-        return result
 
-    @namespace.expect(namespace_model)
-    @namespace.marshal_with(namespace_model)
-    def put(self):
-        json_data = request.get_json()
+@router.get("/", response_model=list[schemas.User], status_code=status.HTTP_200_OK)
+def get_all_users(db: Session = Depends(get_db)):
+    return db.query(models.User).all()
 
-        user = UserModel.query.filter_by(id=json_data['id']).first()
-        if user:
-            abort(409, message="User id taken...")
 
-        user = UserModel(fullname=json_data['fullname'], username=json_data['username'],
-                         password=json_data['password'], email=json_data['email'])
-        db.session.add(user)
-        db.session.commit()
-        return user, 201
+@router.post("/", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    db_user = db.query(models.User).filter_by(id=user.email).first()
+    if db_user:
+        raise HTTPException(status_code=409, detail="User email taken..")
+    db.add(user)
+    db.commit()
+    return user
+
+
+@router.put("/{id_user}", response_model=schemas.User, status_code=status.HTTP_202_ACCEPTED)
+def update_user(self, user: schemas.UserCreate, id_user: int, db: Session = Depends(get_db)):
+    db_user = self.if_exist_user(id_user)
+
+    if user.fullname:
+        db_user.fullname = user.fullname
+    db.commit()
+    return db_user
+
+
+@router.delete("/{id_user}", response_model=schemas.User, status_code=status.HTTP_200_OK)
+def delete_user(self, id_user, db: Session = Depends(get_db)):
+    user = self.if_exist_user(id_user)
+    db.delete(user)
+    db.commit()
+    return
+
+
+def if_exist_user(id_user, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter_by(id=id_user).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Could not find user with that id")
+    return user

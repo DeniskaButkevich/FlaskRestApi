@@ -1,60 +1,53 @@
-from flask import request
-from flask_restx import Resource, abort
+from fastapi import HTTPException, status, APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from core.model.order import Order as Model, model, model_patch, model_put, namespace
-from core.main.database import db
-from core.model.product import Product as ProductModel
-from core.model.user import User as UserModel
+from core import models
+from core import schemas
+from core.main.database import get_db
 
-
-@namespace.route("/<int:id_order>/")
-class Order(Resource):
-
-    @namespace.marshal_with(model)
-    def get(self, id_order):
-        order = Model.query.filter_by(id=id_order).first()
-        return order if order else abort(404, message="Could not find order with that id")
-
-    @namespace.expect(model_patch)
-    @namespace.marshal_with(model)
-    def patch(self, id_order):
-        json_data = request.get_json()
-        order = Model.query.filter_by(id=id_order).first()
-        if not order:
-            abort(404, message="Order doesn't exist, cannot update")
-
-        if json_data['status']:
-            order.status = json_data['status']
-
-        db.session.commit()
-        return order
-
-    @staticmethod
-    def delete(id_order):
-        order = Model.query.filter_by(id=id_order).first()
-        if not order:
-            abort(404, message="Order doesn't exist, cannot delete")
-        db.session.delete(order)
-        db.session.commit()
-        return '', 204
+router = APIRouter(
+    prefix="/order",
+    tags=["Order"]
+)
 
 
-@namespace.route("")
-class OrderList(Resource):
+@router.get("/{id_order}/", response_model=schemas.Order, status_code=status.HTTP_200_OK)
+def get_order(id_order: int, db: Session = Depends(get_db)):
+    order = db.query(models.Order).filter_by(id=id_order).first()
+    if order:
+        raise HTTPException(status_code=404, detail="Could not find order with that id")
+    return order
 
-    @namespace.marshal_with(model)
-    def get(self):
-        return Model.query.all()
 
-    @namespace.expect(model_put)
-    @namespace.marshal_with(model)
-    def put(self):
-        json_data = request.get_json()
-        products_f = []
-        pp = ProductModel.query.filter_by(id=json_data['products']['id']).first()
-        uu = UserModel.query.filter_by(id=json_data['user']['id']).first()
-        products_f.append(pp)
-        order = Model(address=json_data['address'], products=products_f, user=uu)
-        db.session.add(order)
-        db.session.commit()
-        return order, 201
+@router.get("/", response_model=list[schemas.Order], status_code=status.HTTP_200_OK)
+def get_all_orders(db: Session = Depends(get_db)):
+    return db.query(models.Order).all()
+
+
+@router.post("/", response_model=schemas.Order, status_code=status.HTTP_201_CREATED)
+def post(order: schemas.OrderCreate, db: Session = Depends(get_db)):
+    db.add(order)
+    db.commit()
+    return order
+
+
+@router.put("/{id_order}/", response_model=schemas.Order, status_code=status.HTTP_202_ACCEPTED)
+def update_order(order: schemas.OrderUpdate, id_order: int, db: Session = Depends(get_db)):
+    db_order = db.query(models.Order).filter_by(id=id_order).first()
+    if not db_order:
+        raise HTTPException(status_code=404, detail="Order doesn't exist, cannot update")
+    if order.status:
+        db_order.status = order.status
+
+    db.commit()
+    return order
+
+
+@router.delete("/{id_order}/", status_code=status.HTTP_204_NO_CONTENT)
+def delete(id_order: int, db: Session = Depends(get_db)):
+    order = db.query(models.Order).filter_by(id=id_order).first()
+    if not order:
+        raise HTTPException(status_code=404, detail="Order doesn't exist, cannot delete")
+    db.delete(order)
+    db.commit()
+    return

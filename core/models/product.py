@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, String, Column, ForeignKey
+from sqlalchemy import Integer, String, Column, ForeignKey, Float
 from sqlalchemy.orm import relationship
 
 from ..main.database import Base
@@ -13,7 +13,7 @@ class Product(Base):
     id = Column(Integer, primary_key=True, unique=True)
     name = Column(String(20), nullable=False)
     description = Column(String(200))
-    price = Column(Integer, nullable=False)
+    price = Column(Float, nullable=False)
 
     categories = relationship(
         "Category",
