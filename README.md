@@ -1,13 +1,13 @@
-# Flask API
+# Fast API
 
 ---
 
-This is a Flask API CRUD project.
+This is a Fast API CRUD project.
 
 ### Dependencies
 
 * [Python](https://www.python.org/) - Programming Language
-* [Flask](https://flask.palletsprojects.com/) - The framework used
+* [FastApi](https://fastapi.tiangolo.com/) - The framework used
 * [SQLAlchemy](https://docs.sqlalchemy.org/) - ORM
 * [Pydantic](https://pydantic-docs.helpmanual.io/) - Data validation
 * [Alembic](https://alembic.sqlalchemy.org/) - Database Migrations
@@ -30,9 +30,7 @@ $ pip install -r requirements.txt
 ### Running
 
 ```
-$ export FLASK_APP=app.py
-$ export FLASK_ENV=development
-$ python -m flask run
+ uvicorn main:app --port 5008 --access-log
 ```
 
 This launches a very simple builtin server, which is good enough for testing but probably not what you want to use in
@@ -45,25 +43,23 @@ If you have the debugger disabled or trust the users on your network, you can ma
 by adding --host=0.0.0.0 to the command line:
 
 ```
-flask run --host=0.0.0.0
+ uvicorn main:app --port 5008 --access-log
 ```
-
-### Running using Manager
-
-This app can be started using Flask Manager. It provides some useful commands and configurations, also, it can be
-customized with more functionalities.
 
 ```
 python manage.py runserver
 ```
 
-### Testing 
+### Testing
+
 ```
 python -m pytest tests/unit/
 python -m pytest tests/functional/
 ```
-To really get a sense of when the `test_client()` fixture is run, 
+
+To really get a sense of when the `test_client()` fixture is run,
 pytest can provide a call structure of the fixtures and tests with the `--setup-show` argument:
+
 ```
 (venv)$ python -m pytest --setup-show tests/functional/test_recipes.py
 ====================================== test session starts =====================================
@@ -90,8 +86,8 @@ http://127.0.0.1:5000/api/doc
 Use the following commands to create a new migration file and update the database with the last migrations version:
 
 ```
-flask db revision --autogenerate -m "description here"
-flask db upgrade head
+db revision --autogenerate -m "description here"
+db upgrade head
 ```
 
 This project also uses the customized manager command to perform migrations.
@@ -113,6 +109,4 @@ For more information, access [Auto generating migrations](https://alembic.sqlalc
 
 This API was developed based on:
 
-[Flask documentation](https://flask.palletsprojects.com/)
-
-[REST APIs with Flask and Python](https://www.udemy.com/rest-api-flask-and-python/) 
+[FastApi documentation](https://fastapi.tiangolo.com/)
