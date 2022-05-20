@@ -27,12 +27,12 @@ class Order(Base):
         lazy='select'
     )
 
-    def __init__(self, address, products, user):
+    def __init__(self, address, products, user_id):
         self.address = address
         self.products = products
         self.status = 1
         self.date = datetime.now()
-        self.user = user
+        self.user_id = user_id
 
     def __repr__(self):
         return "<Product(name='%s', description='%s')>" % (self.name, self.description)

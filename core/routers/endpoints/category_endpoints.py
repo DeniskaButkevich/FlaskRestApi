@@ -2,7 +2,7 @@ from fastapi import status, Depends, HTTPException, APIRouter
 from sqlalchemy.orm import Session
 
 from core import models
-from core import schemas
+from core.schemas import category as schemas
 from core.main.database import get_db
 
 router = APIRouter(
@@ -19,8 +19,13 @@ def get_category(id_category: int, db: Session = Depends(get_db)):
     return category
 
 
-@router.get("/", response_model=schemas.Category, status_code=status.HTTP_200_OK)
+@router.get("/", response_model=list[schemas.Category], status_code=status.HTTP_200_OK)
 def get_all_category(db: Session = Depends(get_db)):
+    return db.query(models.Category).all()
+
+
+@router.get("/products", response_model=list[schemas.CategoryProducts], status_code=status.HTTP_200_OK)
+def get_all_category_with_products(db: Session = Depends(get_db)):
     return db.query(models.Category).all()
 
 
@@ -35,9 +40,9 @@ def add_category(category: schemas.CategoryCreate, db: Session = Depends(get_db)
     return db_category
 
 
-@router.put("/{id_category}/", response_model=schemas.ProductUpdate, status_code=status.HTTP_202_ACCEPTED)
+@router.put("/{id_category}/", response_model=schemas.CategoryUpdate, status_code=status.HTTP_202_ACCEPTED)
 def update_category(id_category: int, category: schemas.CategoryUpdate, db: Session = Depends(get_db)):
-    db_category = models.Category.query.filter_by(id=id_category).first()
+    db_category = db.query(models.Category).filter_by(id=id_category).first()
     if not category:
         raise HTTPException(status_code=404, detail="Category doesn't exist, cannot update")
 
@@ -52,7 +57,7 @@ def update_category(id_category: int, category: schemas.CategoryUpdate, db: Sess
 
 @router.delete("/{id_category}/", status_code=status.HTTP_202_ACCEPTED)
 def delete_category(id_category: int, db: Session = Depends(get_db)):
-    category = models.Category.query.filter_by(id=id_category).first()
+    category = db.query(models.Category).filter_by(id=id_category).first()
     if not category:
         raise HTTPException(status_code=404, detail="Category doesn't exist, cannot delete")
     db.delete(category)
@@ -60,7 +65,7 @@ def delete_category(id_category: int, db: Session = Depends(get_db)):
     return
 
 
-@router.patch("/{id_category}/product/{id_product}", response_model=schemas.Category,
+@router.patch("/{id_category}/product/{id_product}", response_model=schemas.CategoryProducts,
               status_code=status.HTTP_202_ACCEPTED)
 def add_product_to_category(id_category: int, id_product: int, db: Session = Depends(get_db)):
     category = db.query(models.Category).filter_by(id=id_category).first()
@@ -72,8 +77,8 @@ def add_product_to_category(id_category: int, id_product: int, db: Session = Dep
     return category
 
 
-@router.patch("/{id_category}/product/{id_product}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_product_to_category(id_category: int, id_product: int, db: Session = Depends(get_db)):
+@router.delete("/{id_category}/product/{id_product}", status_code=status.HTTP_202_ACCEPTED)
+def delete_product_from_category(id_category: int, id_product: int, db: Session = Depends(get_db)):
     category = db.query(models.Category).filter_by(id=id_category).first()
     product = db.query(models.Product).filter_by(id=id_product).first()
     if category or product:

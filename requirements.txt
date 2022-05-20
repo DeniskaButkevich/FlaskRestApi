@@ -16,7 +16,7 @@ Loguru==0.6.0
 # Тестирование
 PyTest==7.1.2
 starlette~=0.20.0
-uvicorn
+uvicorn~=0.17.6
 
 # asgiref-3.5.2
 # certifi-2021.10.8
@@ -36,3 +36,4 @@ uvicorn
 # uvloop-0.16.0
 # watchgod-0.8.2
 # websockets-10.3
+python-dotenv~=0.20.0

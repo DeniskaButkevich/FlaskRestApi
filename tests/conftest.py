@@ -1,17 +1,33 @@
 import os
 
 import pytest
-from app import app, main
-from app.model import User
+from main import app
+from core.models import User
+from starlette.testclient import TestClient
+
+from alembic import command
+from alembic.config import Config
+from core.main import database
+from sqlalchemy_utils import create_database, drop_database
+
+
+@pytest.fixture(scope="module")
+def temp_db():
+    create_database(database.TEST_SQLALCHEMY_DATABASE_URL) # Создаем БД
+    base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    alembic_cfg = Config(os.path.join(base_dir, "alembic.ini")) # Загружаем конфигурацию alembic
+    command.upgrade(alembic_cfg, "head") # выполняем миграции
+
+    try:
+        yield database.TEST_SQLALCHEMY_DATABASE_URL
+    finally:
+        drop_database(database.TEST_SQLALCHEMY_DATABASE_URL) # удаляем БД
 
 
 @pytest.fixture(scope='module')
 def test_client():
-    app.config.from_object(main.settings[os.environ.get('APPLICATION_ENV', 'testing')])
-
-    with app.test_client() as testing_client:
-        with app.app_context():
-            yield testing_client  # this is where the testing happens!
+    client = TestClient(app)
+    yield client  # testing happens here
 
 
 @pytest.fixture(scope='module')
