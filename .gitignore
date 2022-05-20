@@ -1,6 +1,7 @@
 \.idea/
 
 venv/
+var
 
 *.pyc
 __pycache__/

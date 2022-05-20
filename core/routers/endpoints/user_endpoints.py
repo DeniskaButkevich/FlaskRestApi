@@ -2,7 +2,7 @@ from fastapi import HTTPException, status, APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from core import models
-from core import schemas
+from core.schemas import user as schemas
 from core.main.database import get_db
 
 router = APIRouter(
@@ -12,8 +12,8 @@ router = APIRouter(
 
 
 @router.get("/{id_user}", response_model=schemas.User, status_code=status.HTTP_200_OK)
-def get_user(self, id_user):
-    return self.if_exist_user(id_user)
+def get_user(id_user, db: Session = Depends(get_db)):
+    return if_exist_user(id_user, db)
 
 
 @router.get("/", response_model=list[schemas.User], status_code=status.HTTP_200_OK)
@@ -23,17 +23,22 @@ def get_all_users(db: Session = Depends(get_db)):
 
 @router.post("/", response_model=schemas.User, status_code=status.HTTP_201_CREATED)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter_by(id=user.email).first()
-    if db_user:
+    db_user_username = db.query(models.User).filter_by(username=user.username).first()
+    if db_user_username:
+        raise HTTPException(status_code=409, detail="User username taken..")
+    db_user_email = db.query(models.User).filter_by(email=user.email).first()
+    if db_user_email:
         raise HTTPException(status_code=409, detail="User email taken..")
-    db.add(user)
+
+    db_user = models.User(fullname=user.fullname, username=user.username, email=user.email, password=user.password)
+    db.add(db_user)
     db.commit()
-    return user
+    return db_user
 
 
 @router.put("/{id_user}", response_model=schemas.User, status_code=status.HTTP_202_ACCEPTED)
-def update_user(self, user: schemas.UserCreate, id_user: int, db: Session = Depends(get_db)):
-    db_user = self.if_exist_user(id_user)
+def update_user(user: schemas.UserCreate, id_user: int, db: Session = Depends(get_db)):
+    db_user = if_exist_user(id_user, db)
 
     if user.fullname:
         db_user.fullname = user.fullname
@@ -42,8 +47,8 @@ def update_user(self, user: schemas.UserCreate, id_user: int, db: Session = Depe
 
 
 @router.delete("/{id_user}", response_model=schemas.User, status_code=status.HTTP_200_OK)
-def delete_user(self, id_user, db: Session = Depends(get_db)):
-    user = self.if_exist_user(id_user)
+def delete_user( id_user, db: Session = Depends(get_db)):
+    user = if_exist_user(id_user, db)
     db.delete(user)
     db.commit()
     return

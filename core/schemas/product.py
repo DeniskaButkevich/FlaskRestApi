@@ -1,16 +1,22 @@
-from decimal import Decimal
+from typing import List
 
-from pydantic import BaseModel, constr, condecimal
+from pydantic import BaseModel, constr
 
 
 class ProductBase(BaseModel):
     name: constr(min_length=3, max_length=20)
     description: constr(max_length=200)
-    price: condecimal(max_digits=2, decimal_places=2, multiple_of=Decimal('0.25'))
+    price: float
+
+
+# class CategoryForProduct(BaseModel):
+#     id: int
+#     name: str
 
 
 class Product(ProductBase):
     id: int
+    # categories: list[CategoryForProduct]
 
     class Config:
         orm_mode = True
@@ -22,5 +28,6 @@ class ProductCreate(ProductBase):
 
 
 class ProductUpdate(ProductBase):
+
     class Config:
         orm_mode = True

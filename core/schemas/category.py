@@ -1,4 +1,8 @@
+from typing import List
+
 from pydantic import BaseModel, constr
+
+from core.schemas.product import Product
 
 
 class CategoryBase(BaseModel):
@@ -18,5 +22,12 @@ class CategoryCreate(CategoryBase):
 
 
 class CategoryUpdate(CategoryBase):
+    class Config:
+        orm_mode = True
+
+
+class CategoryProducts(CategoryBase):
+    products: List[Product]
+
     class Config:
         orm_mode = True
