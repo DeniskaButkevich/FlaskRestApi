@@ -1,1 +1,1 @@
-from core.main.custom_loggining import CustomizeLogger
+from core.main.logger import CustomizeLogger

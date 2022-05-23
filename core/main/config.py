@@ -1,45 +1,36 @@
 # config.py
-import os
 from typing import Optional
 from pydantic import BaseSettings, Field
 
-NAME = os.environ.get('NAME')
-
 
 class Settings(BaseSettings):
-    secret_key: str = Field('random_string', env='ANOTHER_SECRET_KEY')
-    port: int = 5050
-    username: str = "ANAND"
-    ENV_STATE: Optional[str] = Field(None, env="ENV_STATE")
-
-    class Config:
-        case_sensitive = False
-        env_file = '.env' # This is the key factor
+    ENV_STATE: Optional[str] = Field("dev", env="ENV_STATE")
 
 
 class Dev(Settings):
-    username = "TRIPATHI"
+    PORT = 8000
 
-    class Config:
-        env_file = 'dev.env'
+    ENV_STATE = "dev"  # or prod
+
+    DB_USER = "admin"
+    DB_PASS = "admin"
+    DB_NAME = "fast_db_test"
+    DB_HOST = "localhost"
 
 
 class Prod(Settings):
-    username = "Production"
-    port = 5051
-
-    class Config:
-        env_file = 'prod.env'
+    pass
 
 
 class Test(Settings):
-    username = "Testing"
-    port = 5051
-    DATABASE_URL = "postgresql://admin:admin@db:5432/fast_db"
-    SQLALCHEMY_DATABASE_URI = "postgresql://admin:admin@db:5432/fast_db"
+    PORT = 5000
 
-    class Config:
-        env_file = 'test.env'
+    ENV_STATE = "test"  # or prod
+
+    DB_USER = "docker"
+    DB_PASS = "docker"
+    DB_NAME = "fast_db"
+    DB_HOST = "db"
 
 
 class FactoryConfig:
@@ -51,7 +42,6 @@ class FactoryConfig:
     def __call__(self):
         if self.env_state == "dev":
             return Dev()
-
         elif self.env_state == "prod":
             return Prod()
         elif self.env_state == "test":
